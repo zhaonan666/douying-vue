@@ -1,7 +1,11 @@
 <script setup>
-import HelloWorld from './components/HelloWorld.vue'
+import TopNavBar from "./components/TopNavBar.vue";
 </script>
 
 <template>
-  <HelloWorld />
+  <div class="app-container">
+    <TopNavBar />
+
+    <router-view />
+  </div>
 </template>
