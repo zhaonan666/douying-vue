@@ -1,11 +1,12 @@
 <script setup>
-import TopNavBar from "./components/TopNavBar.vue";
+import BottomNavBar from "./components/BottomNavBar.vue";
 </script>
 
 <template>
   <div class="app-container">
-    <TopNavBar />
+  
 
     <router-view />
+    <BottomNavBar />
   </div>
 </template>
