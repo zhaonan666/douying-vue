@@ -21,10 +21,15 @@ const active = ref("home");
 <style scoped>
 :deep(.van-tabbar) {
   height: 58px;
+  background: #000;
 }
 
 :deep(.van-tabbar-item__text) {
   font-size: 15px;
   line-height: 20px;
+  color: white;
+}
+:deep(.van-tabbar-item--active) {
+  background: black;
 }
 </style>
