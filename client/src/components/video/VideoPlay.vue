@@ -20,7 +20,7 @@
       >
         <video
           :ref="(el) => setVideoRef(el, index)"
-          :src="`http://localhost:3300/video/proxy?url=${encodeURIComponent(videoInfo.video.playUrl)}`"
+          :src="videoInfo.videoUrl"
           autoplay
           loop
           muted

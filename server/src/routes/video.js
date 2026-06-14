@@ -24,15 +24,30 @@ async function resolvePlayUrl(url) {
   return url;
 }
 
+function buildProxyUrl(req, url) {
+  if (!url) {
+    return "";
+  }
+
+  const baseUrl = `${req.protocol}://${req.get("host")}`;
+  return `${baseUrl}/video/proxy?url=${encodeURIComponent(url)}`;
+}
+
 router.get("/", async (req, res) => {
   try {
     const list = await Promise.all(
       posts.map(async (item) => {
         const rawUrl = item.video?.play_addr?.url_list?.[0];
         const playUrl = rawUrl ? await resolvePlayUrl(rawUrl) : "";
+        const avatarRawUrl =
+          item.author?.avatar_168x168?.url_list?.[0] ||
+          item.author?.avatar_thumb?.url_list?.[0] ||
+          "";
 
         return {
           ...item,
+          videoUrl: buildProxyUrl(req, playUrl),
+          avatarUrl: buildProxyUrl(req, avatarRawUrl),
           video: {
             ...item.video,
             playUrl,
