@@ -1,10 +1,18 @@
 <template>
   <div class="home-page">
     <TopNavBar />
-    <div class="video-list" @touchstart="onTouchStart" @touchend="onTouchEnd">
+    <div
+      class="video-list"
+      @touchstart="onTouchStart"
+      @touchmove.prevent="onTouchMove"
+      @touchend="onTouchEnd"
+    >
       <div
         class="video-track"
-        :style="{ transform: `translateY(-${activeIndex * 100}vh)` }"
+        :class="{ dragging: isDragging }"
+        :style="{
+          transform: `translateY(calc(-${activeIndex * 100}vh + ${dragOffsetY}px))`,
+        }"
       >
         <div
           v-for="(videoInfo, index) in videoInfoList"
@@ -35,6 +43,8 @@ const videoInfoList = ref([]);
 const activeIndex = ref(0);
 const startY = ref(0);
 const videoRefs = ref([]);
+const dragOffsetY = ref(0);
+const isDragging = ref(false);
 
 function setVideoRef(el, index) {
   if (el) {
@@ -57,24 +67,28 @@ function playCurrentVideo() {
 
 const onTouchStart = (e) => {
   startY.value = e.touches[0].clientY;
+  isDragging.value = true;
 };
 
-const onTouchEnd = (e) => {
-  const endY = e.changedTouches[0].clientY;
-  const diff = startY.value - endY;
+const onTouchMove = (e) => {
+  const currentY = e.touches[0].clientY;
+  dragOffsetY.value = currentY - startY.value;
+};
+const onTouchEnd = () => {
+  const threshold = 80;
 
-  if (Math.abs(diff) < 50) return;
-
-  if (diff > 0) {
+  if (dragOffsetY.value < -threshold) {
     activeIndex.value = Math.min(
       activeIndex.value + 1,
       videoInfoList.value.length - 1,
     );
-  } else {
+  } else if (dragOffsetY.value > threshold) {
     activeIndex.value = Math.max(activeIndex.value - 1, 0);
   }
-};
 
+  dragOffsetY.value = 0;
+  isDragging.value = false;
+};
 onMounted(() => {
   request
     .get("/video")
@@ -111,6 +125,10 @@ watch(activeIndex, async () => {
 .video-track {
   height: 100%;
   transition: transform 0.28s ease;
+}
+
+.video-track.dragging {
+  transition: none;
 }
 
 .video-item {
