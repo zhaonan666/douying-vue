@@ -7,6 +7,7 @@ export const useVideoStore = defineStore("video", () => {
   const activeIndex = ref(0);
   const loading = ref(false);
   const isMuted = ref(true);
+  const showCommentPopup = ref(false);
 
   const getVideoList = async () => {
     loading.value = true;
@@ -26,6 +27,7 @@ export const useVideoStore = defineStore("video", () => {
     return videoInfoList.value[activeIndex.value] || null;
   });
   return {
+    showCommentPopup,
     isMuted,
     videoInfoList,
     loading,

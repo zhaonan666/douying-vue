@@ -12,17 +12,30 @@
     </div>
 
     <div class="like-container flex flex-col">
-      <van-icon name="like" size="35" color="white" />
+      <van-icon
+        name="like"
+        size="35"
+        :color="isLike ? 'red' : 'white'"
+        @click="isLike = !isLike"
+      />
       <span class="count text-white">{{ formatNumber(diggCount) }}</span>
     </div>
 
-    <div class="comment-container flex flex-col">
+    <div
+      class="comment-container flex flex-col"
+      @click.stop="showCommentPopup = true"
+    >
       <van-icon name="comment" size="35" color="white" />
       <span class="count text-white">{{ formatNumber(commentCount) }}</span>
     </div>
 
     <div class="collect-container flex flex-col">
-      <van-icon name="star" size="35" color="white" />
+      <van-icon
+        name="star"
+        size="35"
+        :color="isCollect ? 'yellow' : 'white'"
+        @click="isCollect = !isCollect"
+      />
       <span class="count text-white">{{ formatNumber(collectCount) }}</span>
     </div>
 
@@ -33,7 +46,7 @@
 
     <div
       class="w-10 h-10 rounded-full bg-white flex items-center justify-center"
-      @click.stop="isMuted = !isMuted"
+      @click.stop="isMuted = true"
     >
       <Icon
         v-if="isMuted"
@@ -51,18 +64,27 @@
         class="animate-spin slow-spin"
       />
     </div>
+    <van-popup
+      v-model:show="showCommentPopup"
+      position="bottom"
+      close-on-click-overlay
+      @click-overlay="showCommentPopup = false"
+      :style="{ height: '70%', 'border-radius': '16px 16px 0 0' }"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import { useVideoStore } from "@/stores/video.js";
 import { storeToRefs } from "pinia";
 import { formatNumber } from "@/utils/index.js";
 import { Icon } from "@iconify/vue";
 
 const videoStore = useVideoStore();
-const { currentVideoInfo, isMuted } = storeToRefs(videoStore);
+const { currentVideoInfo, isMuted, showCommentPopup } = storeToRefs(videoStore);
+const isLike = ref(false);
+const isCollect = ref(false);
 
 const avatarUrl = computed(() => currentVideoInfo.value?.avatarUrl || "");
 const diggCount = computed(

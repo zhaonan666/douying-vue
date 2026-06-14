@@ -1,5 +1,6 @@
 <template>
   <div
+    ref="listRef"
     class="video-list"
     @touchstart="onTouchStart"
     @touchmove.prevent="onTouchMove"
@@ -9,14 +10,14 @@
       class="video-track"
       :class="{ dragging: isDragging }"
       :style="{
-        transform: `translateY(calc(-${activeIndex * 100}vh + ${dragOffsetY}px + ${106 * activeIndex}px))`,
+        transform: `translateY(${-activeIndex * listHeight + dragOffsetY}px)`,
       }"
     >
       <div
         v-for="(videoInfo, index) in videoInfoList"
         :key="videoInfo.aweme_id"
         class="video-item"
-        @click="isPaused = !isPaused"
+        @click="handleClickVideo()"
       >
         <video
           :ref="(el) => setVideoRef(el, index)"
@@ -35,16 +36,27 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, nextTick } from "vue";
+import { onMounted, nextTick, onUnmounted } from "vue";
 import { ref, watch } from "vue";
 import { storeToRefs } from "pinia";
 import { useVideoStore } from "@/stores/video.js";
 
 const videoStore = useVideoStore();
 
-const { videoInfoList, activeIndex, isMuted } = storeToRefs(videoStore);
+const { videoInfoList, activeIndex, isMuted, showCommentPopup } =
+  storeToRefs(videoStore);
 const { getVideoList } = videoStore;
 
+const listRef = ref(null);
+const listHeight = ref(0);
+
+const handleClickVideo = () => {
+  isPaused.value = !isPaused.value;
+};
+
+const updateListHeight = () => {
+  listHeight.value = listRef.value?.clientHeight || 0;
+};
 const startY = ref(0);
 const videoRefs = ref([]);
 const dragOffsetY = ref(0);
@@ -97,7 +109,13 @@ const onTouchEnd = () => {
 onMounted(async () => {
   await getVideoList();
   await nextTick();
+  updateListHeight();
   playCurrentVideo();
+  window.addEventListener("resize", updateListHeight);
+});
+
+onUnmounted(() => {
+  window.removeEventListener("resize", updateListHeight);
 });
 
 watch(activeIndex, async () => {
@@ -117,7 +135,7 @@ watch(isPaused, () => {
 <style scoped>
 .video-list {
   width: 100%;
-  height: calc(100vh - 106px);
+  flex: 1;
   overflow-y: hidden;
 }
 
