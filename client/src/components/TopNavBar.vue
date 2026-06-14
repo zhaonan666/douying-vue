@@ -7,8 +7,8 @@
         v-for="(item, index) in tabs"
         :key="item"
         class="nav-item"
-        :class="{ active: activeIndex === index }"
-        @click="activeIndex = index"
+        :class="{ active: activeTab === item }"
+        @click="activeTab = item"
       >
         {{ item }}
       </span>
@@ -24,7 +24,7 @@ import SearchPopup from "./SearchPopup.vue";
 import { ref } from "vue";
 
 const tabs = ["热点", "长视频", "关注", "经验", "推荐"];
-const activeIndex = ref(0);
+const activeTab = ref("推荐");
 </script>
 
 <style scoped>
