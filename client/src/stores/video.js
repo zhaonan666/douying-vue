@@ -6,6 +6,7 @@ export const useVideoStore = defineStore("video", () => {
   const videoInfoList = ref([]);
   const activeIndex = ref(0);
   const loading = ref(false);
+  const isMuted = ref(true);
 
   const getVideoList = async () => {
     loading.value = true;
@@ -25,6 +26,7 @@ export const useVideoStore = defineStore("video", () => {
     return videoInfoList.value[activeIndex.value] || null;
   });
   return {
+    isMuted,
     videoInfoList,
     loading,
     getVideoList,

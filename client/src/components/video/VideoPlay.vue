@@ -23,7 +23,7 @@
           :src="videoInfo.videoUrl"
           autoplay
           loop
-          muted
+          :muted="isMuted"
           playsinline
           class="video-player"
         ></video>
@@ -36,14 +36,13 @@
 
 <script setup lang="ts">
 import { onMounted, nextTick } from "vue";
-import request from "@/request/request.js";
 import { ref, watch } from "vue";
 import { storeToRefs } from "pinia";
 import { useVideoStore } from "@/stores/video.js";
 
 const videoStore = useVideoStore();
 
-const { videoInfoList, activeIndex } = storeToRefs(videoStore);
+const { videoInfoList, activeIndex, isMuted } = storeToRefs(videoStore);
 const { getVideoList } = videoStore;
 
 const startY = ref(0);
