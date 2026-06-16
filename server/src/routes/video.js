@@ -1,7 +1,13 @@
 import express from "express";
 import { Readable } from "node:stream";
 import posts from "../data/douyin/posts6.json" with { type: "json" };
+import fs from "node:fs/promises";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
+const commentsDir = path.resolve(__dirname, "../data/douyin/public/comments");
 const router = express.Router();
 
 async function resolvePlayUrl(url) {
@@ -31,6 +37,22 @@ function buildProxyUrl(req, url) {
 
   const baseUrl = `${req.protocol}://${req.get("host")}`;
   return `${baseUrl}/video/proxy?url=${encodeURIComponent(url)}`;
+}
+
+async function readComments(req, id) {
+  const filePath = path.join(commentsDir, `video_id_${id}.json`);
+  const fileContent = await fs.readFile(filePath, "utf-8");
+
+  return JSON.parse(fileContent).map((comment) => ({
+    ...comment,
+    avatarUrl: buildProxyUrl(req, comment.avatar),
+  }));
+}
+
+function getSeed(text = "") {
+  return String(text)
+    .split("")
+    .reduce((sum, char) => sum + char.charCodeAt(0), 0);
 }
 
 router.get("/", async (req, res) => {
@@ -116,6 +138,92 @@ router.get("/proxy", async (req, res) => {
     res.status(500).json({
       code: 500,
       message: error.message || "视频代理失败",
+    });
+  }
+});
+
+router.get("/comments", async (req, res) => {
+  try {
+    const id = req.query.id;
+
+    if (!id) {
+      return res.status(400).json({
+        code: 400,
+        message: "缺少 id 参数",
+        data: [],
+      });
+    }
+
+    const comments = await readComments(req, id);
+
+    res.json({
+      code: 200,
+      message: "success",
+      data: comments,
+    });
+  } catch (error) {
+    res.status(404).json({
+      code: 404,
+      message: "评论数据不存在",
+      data: [],
+    });
+  }
+});
+
+router.get("/comments/sub", async (req, res) => {
+  try {
+    const { id, commentId } = req.query;
+    const count = Number(req.query.count) || 3;
+
+    if (!id || !commentId) {
+      return res.status(400).json({
+        code: 400,
+        message: "缺少 id 或 commentId 参数",
+        data: [],
+      });
+    }
+
+    const comments = await readComments(req, id);
+    const parentComment = comments.find(
+      (comment) => String(comment.comment_id) === String(commentId),
+    );
+    const source = comments.filter(
+      (comment) => String(comment.comment_id) !== String(commentId),
+    );
+
+    if (source.length === 0) {
+      return res.json({
+        code: 200,
+        message: "success",
+        data: [],
+      });
+    }
+
+    const start = getSeed(commentId) % source.length;
+    const replies = Array.from(
+      { length: Math.min(count, source.length) },
+      (_, index) => {
+        const comment = source[(start + index) % source.length];
+
+        return {
+          ...comment,
+          comment_id: `${commentId}_${comment.comment_id}`,
+          parent_comment_id: commentId,
+          replay: parentComment?.nickname || "",
+        };
+      },
+    );
+
+    res.json({
+      code: 200,
+      message: "success",
+      data: replies,
+    });
+  } catch (error) {
+    res.status(404).json({
+      code: 404,
+      message: "子评论数据不存在",
+      data: [],
     });
   }
 });

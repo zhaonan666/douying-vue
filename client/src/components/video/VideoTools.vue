@@ -64,13 +64,7 @@
         class="animate-spin slow-spin"
       />
     </div>
-    <van-popup
-      v-model:show="showCommentPopup"
-      position="bottom"
-      close-on-click-overlay
-      @click-overlay="showCommentPopup = false"
-      :style="{ height: '70%', 'border-radius': '16px 16px 0 0' }"
-    />
+    <Comment />
   </div>
 </template>
 
@@ -80,6 +74,7 @@ import { useVideoStore } from "@/stores/video.js";
 import { storeToRefs } from "pinia";
 import { formatNumber } from "@/utils/index.js";
 import { Icon } from "@iconify/vue";
+import Comment from "./Comment.vue";
 
 const videoStore = useVideoStore();
 const { currentVideoInfo, isMuted, showCommentPopup } = storeToRefs(videoStore);
